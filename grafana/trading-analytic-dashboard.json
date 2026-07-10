@@ -1,0 +1,1264 @@
+{
+  "annotations": [
+    {
+      "kind": "AnnotationQuery",
+      "spec": {
+        "builtIn": true,
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "query": {
+          "datasource": {
+            "name": "-- Grafana --"
+          },
+          "group": "grafana",
+          "kind": "DataQuery",
+          "spec": {},
+          "version": "v0"
+        }
+      }
+    }
+  ],
+  "cursorSync": "Off",
+  "editable": true,
+  "elements": {
+    "panel-1": {
+      "kind": "Panel",
+      "spec": {
+        "data": {
+          "kind": "QueryGroup",
+          "spec": {
+            "queries": [
+              {
+                "kind": "PanelQuery",
+                "spec": {
+                  "hidden": false,
+                  "query": {
+                    "datasource": {
+                      "name": "dfqtfblk2jnk0d"
+                    },
+                    "group": "grafana-clickhouse-datasource",
+                    "kind": "DataQuery",
+                    "spec": {
+                      "editorType": "sql",
+                      "format": 0,
+                      "meta": {
+                        "builderOptions": {
+                          "columns": [],
+                          "database": "",
+                          "limit": 1000,
+                          "mode": "list",
+                          "queryType": "table",
+                          "table": ""
+                        }
+                      },
+                      "pluginVersion": "4.18.0",
+                      "queryType": "timeseries",
+                      "rawSql": "SELECT\r\n    $__timeInterval_ms(timestamp) as time,\r\n    avg(ask) as ask,\r\n    avg(bid) as bid\r\nFROM\r\n    `source`.tick_data_${instrument_name}\r\nWHERE\r\n    $__timeFilter_ms(timestamp)\r\nGROUP BY time\r\nORDER BY time ASC"
+                    },
+                    "version": "v0"
+                  },
+                  "refId": "A"
+                }
+              }
+            ],
+            "queryOptions": {},
+            "transformations": []
+          }
+        },
+        "description": "",
+        "id": 1,
+        "links": [],
+        "title": "Ticks",
+        "vizConfig": {
+          "group": "timeseries",
+          "kind": "VizConfig",
+          "spec": {
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic",
+                  "seriesBy": "last"
+                },
+                "custom": {
+                  "axisBorderShow": false,
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "barWidthFactor": 0.6,
+                  "drawStyle": "line",
+                  "fillOpacity": 27,
+                  "gradientMode": "opacity",
+                  "hideFrom": {
+                    "legend": false,
+                    "tooltip": false,
+                    "viz": false
+                  },
+                  "insertNulls": false,
+                  "lineInterpolation": "linear",
+                  "lineStyle": {
+                    "fill": "solid"
+                  },
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "auto",
+                  "showValues": false,
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "decimals": 5,
+                "thresholds": {
+                  "mode": "percentage",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": 0
+                    },
+                    {
+                      "color": "#EAB839",
+                      "value": 40
+                    },
+                    {
+                      "color": "red",
+                      "value": 60
+                    }
+                  ]
+                }
+              },
+              "overrides": []
+            },
+            "options": {
+              "annotations": {
+                "clustering": -1,
+                "multiLane": false
+              },
+              "legend": {
+                "calcs": [
+                  "min",
+                  "max",
+                  "mean",
+                  "last"
+                ],
+                "displayMode": "table",
+                "enableFacetedFilter": false,
+                "overflow": "ellipsis",
+                "placement": "bottom",
+                "showLegend": true
+              },
+              "tooltip": {
+                "hideZeros": false,
+                "mode": "single",
+                "sort": "none"
+              }
+            }
+          },
+          "version": "13.1.0"
+        }
+      }
+    },
+    "panel-2": {
+      "kind": "Panel",
+      "spec": {
+        "data": {
+          "kind": "QueryGroup",
+          "spec": {
+            "queries": [
+              {
+                "kind": "PanelQuery",
+                "spec": {
+                  "hidden": false,
+                  "query": {
+                    "datasource": {
+                      "name": "dfqtfblk2jnk0d"
+                    },
+                    "group": "grafana-clickhouse-datasource",
+                    "kind": "DataQuery",
+                    "spec": {
+                      "editorType": "sql",
+                      "format": 0,
+                      "meta": {
+                        "builderOptions": {
+                          "columns": [],
+                          "database": "",
+                          "limit": 1000,
+                          "mode": "list",
+                          "queryType": "table",
+                          "table": ""
+                        }
+                      },
+                      "pluginVersion": "4.18.0",
+                      "queryType": "timeseries",
+                      "rawSql": "SELECT\r\n  $__timeInterval(t.timestamp) as time,\r\n  avg((t.ask - t.bid) / 0.00001) as spread\r\nFROM\r\n  `ticks_EURUSD` t\r\nWHERE \r\n  $__timeFilter(t.timestamp)\r\nGROUP BY time\r\nORDER BY time"
+                    },
+                    "version": "v0"
+                  },
+                  "refId": "A"
+                }
+              }
+            ],
+            "queryOptions": {},
+            "transformations": []
+          }
+        },
+        "description": "",
+        "id": 2,
+        "links": [],
+        "title": "Spread EURUSD",
+        "vizConfig": {
+          "group": "timeseries",
+          "kind": "VizConfig",
+          "spec": {
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic",
+                  "seriesBy": "last"
+                },
+                "custom": {
+                  "axisBorderShow": false,
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "barWidthFactor": 0.6,
+                  "drawStyle": "bars",
+                  "fillOpacity": 0,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "legend": false,
+                    "tooltip": false,
+                    "viz": false
+                  },
+                  "insertNulls": false,
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "auto",
+                  "showValues": false,
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "thresholds": {
+                  "mode": "percentage",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": 0
+                    },
+                    {
+                      "color": "#EAB839",
+                      "value": 40
+                    },
+                    {
+                      "color": "red",
+                      "value": 60
+                    }
+                  ]
+                }
+              },
+              "overrides": []
+            },
+            "options": {
+              "annotations": {
+                "clustering": -1,
+                "multiLane": false
+              },
+              "legend": {
+                "calcs": [
+                  "min",
+                  "max",
+                  "mean",
+                  "lastNotNull"
+                ],
+                "displayMode": "table",
+                "enableFacetedFilter": true,
+                "overflow": "ellipsis",
+                "placement": "bottom",
+                "showLegend": true
+              },
+              "tooltip": {
+                "hideZeros": false,
+                "mode": "single",
+                "sort": "none"
+              }
+            }
+          },
+          "version": "13.1.0"
+        }
+      }
+    },
+    "panel-5": {
+      "kind": "Panel",
+      "spec": {
+        "data": {
+          "kind": "QueryGroup",
+          "spec": {
+            "queries": [
+              {
+                "kind": "PanelQuery",
+                "spec": {
+                  "hidden": false,
+                  "query": {
+                    "datasource": {
+                      "name": "dfqtfblk2jnk0d"
+                    },
+                    "group": "grafana-clickhouse-datasource",
+                    "kind": "DataQuery",
+                    "spec": {
+                      "editorType": "sql",
+                      "format": 1,
+                      "meta": {
+                        "builderOptions": {
+                          "columns": [],
+                          "database": "",
+                          "limit": 1000,
+                          "mode": "list",
+                          "queryType": "table",
+                          "table": ""
+                        }
+                      },
+                      "pluginVersion": "4.18.0",
+                      "queryType": "table",
+                      "rawSql": "SELECT \r\n    floor(bid / 0.00050) * 0.00050 AS bid_step,\r\n    count() AS tick_count\r\nFROM `ticks_EURUSD`\r\nWHERE $__timeFilter(timestamp)\r\nGROUP BY bid_step\r\nORDER BY bid_step ASC"
+                    },
+                    "version": "v0"
+                  },
+                  "refId": "A"
+                }
+              }
+            ],
+            "queryOptions": {},
+            "transformations": []
+          }
+        },
+        "description": "Что искать: Пики на гистограмме (High Volume Nodes) — это сильные уровни поддержки/сопротивления, где цена «залипает». Впадины (Low Volume Nodes) — зоны, которые цена пролетает импульсно.",
+        "id": 5,
+        "links": [],
+        "title": "Профиль объема и плотности (Price Profile)",
+        "vizConfig": {
+          "group": "barchart",
+          "kind": "VizConfig",
+          "spec": {
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisBorderShow": false,
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "fillOpacity": 80,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "legend": false,
+                    "tooltip": false,
+                    "viz": false
+                  },
+                  "lineWidth": 1,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "decimals": 5,
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": 0
+                    },
+                    {
+                      "color": "red",
+                      "value": 80
+                    }
+                  ]
+                }
+              },
+              "overrides": []
+            },
+            "options": {
+              "barRadius": 0,
+              "barWidth": 0.97,
+              "fullHighlight": false,
+              "groupWidth": 0.7,
+              "legend": {
+                "calcs": [],
+                "displayMode": "list",
+                "overflow": "ellipsis",
+                "placement": "bottom",
+                "showLegend": true
+              },
+              "orientation": "horizontal",
+              "showValue": "auto",
+              "stacking": "none",
+              "tooltip": {
+                "hideZeros": false,
+                "mode": "single",
+                "sort": "none"
+              },
+              "xField": "bid_step",
+              "xTickLabelRotation": 0,
+              "xTickLabelSpacing": 0
+            }
+          },
+          "version": "13.1.0"
+        }
+      }
+    },
+    "panel-6": {
+      "kind": "Panel",
+      "spec": {
+        "data": {
+          "kind": "QueryGroup",
+          "spec": {
+            "queries": [
+              {
+                "kind": "PanelQuery",
+                "spec": {
+                  "hidden": false,
+                  "query": {
+                    "datasource": {
+                      "name": "dfqtfblk2jnk0d"
+                    },
+                    "group": "grafana-clickhouse-datasource",
+                    "kind": "DataQuery",
+                    "spec": {
+                      "editorType": "sql",
+                      "format": 0,
+                      "meta": {
+                        "builderOptions": {
+                          "columns": [],
+                          "database": "",
+                          "limit": 1000,
+                          "mode": "list",
+                          "queryType": "table",
+                          "table": ""
+                        }
+                      },
+                      "pluginVersion": "4.18.0",
+                      "queryType": "timeseries",
+                      "rawSql": "WITH numbered_ticks AS (\r\n    SELECT\r\n        timestamp,\r\n        bid,\r\n        -- Нумеруем тики по порядку (начиная с 0 для удобства деления)\r\n        row_number() OVER (ORDER BY timestamp) - 1 AS tick_index\r\n    FROM `ticks_EURUSD`\r\n    -- Рекомендуется добавить фильтр по времени для ограничения выборки\r\n    WHERE $__timeFilter(timestamp)\r\n),\r\ngrouped_ticks AS (\r\n    SELECT\r\n        -- Группируем по 100 тиков (0-99, 100-199 и т.д.)\r\n        tick_index div 20 AS group_id,\r\n        bid,\r\n        -- Находим первую и последнюю цену в этой сотне тиков\r\n        first_value(bid) OVER (PARTITION BY group_id ORDER BY tick_index ASC) AS first_bid,\r\n        last_value(bid) OVER (PARTITION BY group_id ORDER BY tick_index ASC ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS last_bid,\r\n        -- Берем время начала и конца интервала\r\n        min(timestamp) OVER (PARTITION BY group_id) AS start_time,\r\n        max(timestamp) OVER (PARTITION BY group_id) AS end_time\r\n    FROM numbered_ticks\r\n)\r\nSELECT\r\n    group_id,\r\n    end_time,\r\n    start_time,\r\n    first_bid,\r\n    last_bid,\r\n    -- Вычисляем дельту в пунктах (делим на 0.00001 для перевода в пипсы)\r\n    round((last_bid - first_bid) / 0.00001, 1) AS bid_delta_pips\r\nFROM grouped_ticks\r\nGROUP BY group_id, start_time, end_time, first_bid, last_bid\r\nORDER BY group_id DESC;\r\n"
+                    },
+                    "version": "v0"
+                  },
+                  "refId": "A"
+                }
+              }
+            ],
+            "queryOptions": {},
+            "transformations": []
+          }
+        },
+        "description": "Что искать: Всплески «тиковой активности» часто опережают сильные ценовые движения. Если количество тиков резко растет, а цена не идет вверх — это признак лимитного барьера (крупный игрок удерживает уровень).",
+        "id": 6,
+        "links": [],
+        "title": "Анализ микроструктуры рынка (Импульсы цены)",
+        "vizConfig": {
+          "group": "timeseries",
+          "kind": "VizConfig",
+          "spec": {
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisBorderShow": false,
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "barWidthFactor": 0.6,
+                  "drawStyle": "line",
+                  "fillOpacity": 0,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "legend": false,
+                    "tooltip": false,
+                    "viz": false
+                  },
+                  "insertNulls": false,
+                  "lineInterpolation": "linear",
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "auto",
+                  "showValues": false,
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": 0
+                    },
+                    {
+                      "color": "red",
+                      "value": 80
+                    }
+                  ]
+                }
+              },
+              "overrides": [
+                {
+                  "__systemRef": "hideSeriesFrom",
+                  "matcher": {
+                    "id": "byNames",
+                    "options": {
+                      "mode": "exclude",
+                      "names": [
+                        "first_bid",
+                        "last_bid",
+                        "bid_delta_pips"
+                      ],
+                      "prefix": "All except:",
+                      "readOnly": true
+                    }
+                  },
+                  "properties": [
+                    {
+                      "id": "custom.hideFrom",
+                      "value": {
+                        "legend": false,
+                        "tooltip": true,
+                        "viz": true
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            "options": {
+              "annotations": {
+                "clustering": -1,
+                "multiLane": false
+              },
+              "legend": {
+                "calcs": [],
+                "displayMode": "list",
+                "enableFacetedFilter": false,
+                "overflow": "ellipsis",
+                "placement": "bottom",
+                "showLegend": true
+              },
+              "tooltip": {
+                "hideZeros": false,
+                "mode": "single",
+                "sort": "none"
+              }
+            }
+          },
+          "version": "13.1.0"
+        }
+      }
+    },
+    "panel-7": {
+      "kind": "Panel",
+      "spec": {
+        "data": {
+          "kind": "QueryGroup",
+          "spec": {
+            "queries": [
+              {
+                "kind": "PanelQuery",
+                "spec": {
+                  "hidden": false,
+                  "query": {
+                    "datasource": {
+                      "name": "dfqtfblk2jnk0d"
+                    },
+                    "group": "grafana-clickhouse-datasource",
+                    "kind": "DataQuery",
+                    "spec": {
+                      "editorType": "sql",
+                      "format": 0,
+                      "meta": {
+                        "builderOptions": {
+                          "columns": [],
+                          "database": "",
+                          "limit": 1000,
+                          "mode": "list",
+                          "queryType": "table",
+                          "table": ""
+                        }
+                      },
+                      "pluginVersion": "4.18.0",
+                      "queryType": "timeseries",
+                      "rawSql": "SELECT\r\n    toHour(timestamp) AS time,\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 0) AS \"0\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 2) AS \"2\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 4) AS \"4\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 6) AS \"6\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 8) AS \"8\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 10) AS \"10\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 12) AS \"12\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 14) AS \"14\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 16) AS \"16\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 18) AS \"18\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 20) AS \"20\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 22) AS \"22\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 24) AS \"24\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 26) AS \"26\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 28) AS \"28\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 30) AS \"30\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 32) AS \"32\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 34) AS \"34\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 36) AS \"36\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 38) AS \"38\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 40) AS \"40\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 42) AS \"42\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 44) AS \"44\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 46) AS \"46\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 48) AS \"48\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 50) AS \"50\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 52) AS \"52\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 54) AS \"54\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 56) AS \"56\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 58) AS \"58\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 60) AS \"60\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 62) AS \"62\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 64) AS \"64\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 66) AS \"66\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 68) AS \"68\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 70) AS \"70\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 72) AS \"72\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 74) AS \"74\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 76) AS \"76\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 78) AS \"78\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 80) AS \"80\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 82) AS \"82\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 84) AS \"84\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 86) AS \"86\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 88) AS \"88\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 90) AS \"90\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 92) AS \"92\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 94) AS \"94\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 96) AS \"96\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 98) AS \"98\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 >= 100) AS \"100\"\r\nFROM `tick_data`\r\nWHERE \r\n  name = '${instrument_name}'\r\n  AND $__timeFilter(timestamp)\r\nGROUP BY time\r\nORDER BY time ASC"
+                    },
+                    "version": "v0"
+                  },
+                  "refId": "A"
+                }
+              }
+            ],
+            "queryOptions": {},
+            "transformations": []
+          }
+        },
+        "description": "Что искать: Вы увидите зоны аномального расширения спреда (например, открытие Лондона/Нью-Йорка, выход новостей). Закономерность здесь: в какие часы ликвидность падает настолько, что торговать становится невыгодно, а в какие — рынок наиболее эффективен.",
+        "id": 7,
+        "links": [],
+        "title": "Фазовое пространство: Распределение спреда по времени и волатильности",
+        "vizConfig": {
+          "group": "heatmap",
+          "kind": "VizConfig",
+          "spec": {
+            "fieldConfig": {
+              "defaults": {
+                "custom": {
+                  "hideFrom": {
+                    "legend": false,
+                    "tooltip": false,
+                    "viz": false
+                  },
+                  "scaleDistribution": {
+                    "type": "linear"
+                  }
+                }
+              },
+              "overrides": []
+            },
+            "options": {
+              "annotations": {
+                "clustering": -1,
+                "multiLane": false
+              },
+              "calculate": false,
+              "cellGap": 2,
+              "color": {
+                "exponent": 0.1,
+                "fill": "dark-green",
+                "mode": "scheme",
+                "reverse": false,
+                "scale": "exponential",
+                "scheme": "Reds",
+                "steps": 70
+              },
+              "exemplars": {
+                "color": "rgba(255,0,255,0.7)"
+              },
+              "filterValues": {
+                "le": 1e-9
+              },
+              "legend": {
+                "show": true
+              },
+              "rowsFrame": {
+                "layout": "auto"
+              },
+              "tooltip": {
+                "mode": "single",
+                "showColorScale": false,
+                "yHistogram": false
+              },
+              "yAxis": {
+                "axisPlacement": "left",
+                "reverse": false
+              }
+            }
+          },
+          "version": "13.1.0"
+        }
+      }
+    },
+    "panel-8": {
+      "kind": "Panel",
+      "spec": {
+        "data": {
+          "kind": "QueryGroup",
+          "spec": {
+            "queries": [
+              {
+                "kind": "PanelQuery",
+                "spec": {
+                  "hidden": false,
+                  "query": {
+                    "datasource": {
+                      "name": "dfqtfblk2jnk0d"
+                    },
+                    "group": "grafana-clickhouse-datasource",
+                    "kind": "DataQuery",
+                    "spec": {
+                      "editorType": "sql",
+                      "format": 0,
+                      "meta": {
+                        "builderOptions": {
+                          "columns": [],
+                          "database": "",
+                          "limit": 1000,
+                          "mode": "list",
+                          "queryType": "table",
+                          "table": ""
+                        }
+                      },
+                      "pluginVersion": "4.18.0",
+                      "queryType": "timeseries",
+                      "rawSql": "SELECT\r\n    $__timeInterval_ms(timestamp) as time,\r\n    avg((bid - ${ma_column_name}) * 100000) as delta\r\nFROM\r\n    `analytic`.tick_data_${instrument_name}_with_ma\r\nWHERE\r\n    $__timeFilter_ms(timestamp)\r\nGROUP BY time\r\nORDER BY time ASC"
+                    },
+                    "version": "v0"
+                  },
+                  "refId": "A"
+                }
+              }
+            ],
+            "queryOptions": {},
+            "transformations": []
+          }
+        },
+        "description": "",
+        "id": 8,
+        "links": [],
+        "title": "",
+        "vizConfig": {
+          "group": "timeseries",
+          "kind": "VizConfig",
+          "spec": {
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic",
+                  "seriesBy": "last"
+                },
+                "custom": {
+                  "axisBorderShow": false,
+                  "axisCenteredZero": true,
+                  "axisColorMode": "text",
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "barWidthFactor": 0.6,
+                  "drawStyle": "line",
+                  "fillOpacity": 27,
+                  "gradientMode": "opacity",
+                  "hideFrom": {
+                    "legend": false,
+                    "tooltip": false,
+                    "viz": false
+                  },
+                  "insertNulls": false,
+                  "lineInterpolation": "linear",
+                  "lineStyle": {
+                    "fill": "solid"
+                  },
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "auto",
+                  "showValues": false,
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "line"
+                  }
+                },
+                "fieldMinMax": false,
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": 0
+                    },
+                    {
+                      "color": "#EAB839",
+                      "value": 0
+                    }
+                  ]
+                }
+              },
+              "overrides": []
+            },
+            "options": {
+              "annotations": {
+                "clustering": -1,
+                "multiLane": false
+              },
+              "legend": {
+                "calcs": [
+                  "min",
+                  "max",
+                  "mean",
+                  "last"
+                ],
+                "displayMode": "table",
+                "enableFacetedFilter": true,
+                "overflow": "ellipsis",
+                "placement": "bottom",
+                "showLegend": true
+              },
+              "tooltip": {
+                "hideZeros": false,
+                "mode": "single",
+                "sort": "none"
+              }
+            }
+          },
+          "version": "13.1.0"
+        }
+      }
+    },
+    "panel-9": {
+      "kind": "Panel",
+      "spec": {
+        "data": {
+          "kind": "QueryGroup",
+          "spec": {
+            "queries": [
+              {
+                "kind": "PanelQuery",
+                "spec": {
+                  "hidden": false,
+                  "query": {
+                    "datasource": {
+                      "name": "dfqtfblk2jnk0d"
+                    },
+                    "group": "grafana-clickhouse-datasource",
+                    "kind": "DataQuery",
+                    "spec": {
+                      "editorType": "sql",
+                      "format": 0,
+                      "meta": {
+                        "builderOptions": {
+                          "columns": [],
+                          "database": "",
+                          "limit": 1000,
+                          "mode": "list",
+                          "queryType": "table",
+                          "table": ""
+                        }
+                      },
+                      "pluginVersion": "4.18.0",
+                      "queryType": "timeseries",
+                      "rawSql": "SELECT\r\n    $__timeInterval_ms(timestamp) as time,\r\n    avg(ask) as ask,\r\n    avg(bid) as bid,\r\n    avg(ma_100000) AS ma__0______100_000,\r\n    avg(ma_200000) AS ma__0______200_000,\r\n    avg(ma_400000) AS ma__0______400_000,\r\n    avg(ma_600000) AS ma__0______600_000,\r\n    avg(ma_800000) AS ma__0______800_000,\r\n    avg(ma_1000000) AS ma__1____1_000_000,\r\n    avg(ma_2000000) AS ma__1____2_000_000,\r\n    avg(ma_4000000) AS ma__1____4_000_000,\r\n    avg(ma_6000000) AS ma__1____6_000_000,\r\n    avg(ma_8000000) AS ma__1____8_000_000,\r\n    avg(ma_10000000) AS ma__2___10_000_000,\r\n    avg(ma_20000000) AS ma__2___20_000_000,\r\n    avg(ma_40000000) AS ma__2___40_000_000,\r\n    avg(ma_60000000) AS ma__2___60_000_000,\r\n    avg(ma_80000000) AS ma__2___80_000_000,\r\n    avg(ma_100000000) AS ma__3__100_000_000\r\nFROM\r\n    `analytic`.tick_data_${instrument_name}_with_ma\r\nWHERE\r\n    $__timeFilter_ms(timestamp)\r\nGROUP BY time\r\nORDER BY time ASC"
+                    },
+                    "version": "v0"
+                  },
+                  "refId": "A"
+                }
+              }
+            ],
+            "queryOptions": {},
+            "transformations": []
+          }
+        },
+        "description": "",
+        "id": 9,
+        "links": [],
+        "title": "Ticks MA",
+        "vizConfig": {
+          "group": "timeseries",
+          "kind": "VizConfig",
+          "spec": {
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic",
+                  "seriesBy": "last"
+                },
+                "custom": {
+                  "axisBorderShow": false,
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "barAlignment": 0,
+                  "barWidthFactor": 0.6,
+                  "drawStyle": "line",
+                  "fillOpacity": 0,
+                  "gradientMode": "none",
+                  "hideFrom": {
+                    "legend": false,
+                    "tooltip": false,
+                    "viz": false
+                  },
+                  "insertNulls": false,
+                  "lineInterpolation": "linear",
+                  "lineStyle": {
+                    "fill": "solid"
+                  },
+                  "lineWidth": 1,
+                  "pointSize": 5,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "showPoints": "auto",
+                  "showValues": false,
+                  "spanNulls": false,
+                  "stacking": {
+                    "group": "A",
+                    "mode": "none"
+                  },
+                  "thresholdsStyle": {
+                    "mode": "off"
+                  }
+                },
+                "decimals": 5,
+                "thresholds": {
+                  "mode": "percentage",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": 0
+                    }
+                  ]
+                }
+              },
+              "overrides": [
+                {
+                  "__systemRef": "hideSeriesFrom",
+                  "matcher": {
+                    "id": "byNames",
+                    "options": {
+                      "mode": "exclude",
+                      "names": [
+                        "bid",
+                        "ma__0______100_000"
+                      ],
+                      "prefix": "All except:",
+                      "readOnly": true
+                    }
+                  },
+                  "properties": [
+                    {
+                      "id": "custom.hideFrom",
+                      "value": {
+                        "legend": false,
+                        "tooltip": true,
+                        "viz": true
+                      }
+                    }
+                  ]
+                }
+              ]
+            },
+            "options": {
+              "annotations": {
+                "clustering": -1,
+                "multiLane": false
+              },
+              "legend": {
+                "calcs": [
+                  "min",
+                  "max",
+                  "mean",
+                  "last"
+                ],
+                "displayMode": "table",
+                "enableFacetedFilter": true,
+                "facetedFilterPinned": false,
+                "overflow": "ellipsis",
+                "placement": "right",
+                "showLegend": true
+              },
+              "tooltip": {
+                "hideZeros": false,
+                "mode": "single",
+                "sort": "none"
+              }
+            }
+          },
+          "version": "13.1.0"
+        }
+      }
+    }
+  },
+  "layout": {
+    "kind": "TabsLayout",
+    "spec": {
+      "tabs": [
+        {
+          "kind": "TabsLayoutTab",
+          "spec": {
+            "layout": {
+              "kind": "GridLayout",
+              "spec": {
+                "items": [
+                  {
+                    "kind": "GridLayoutItem",
+                    "spec": {
+                      "element": {
+                        "kind": "ElementReference",
+                        "name": "panel-1"
+                      },
+                      "height": 13,
+                      "width": 24,
+                      "x": 0,
+                      "y": 0
+                    }
+                  }
+                ]
+              }
+            },
+            "title": "Source"
+          }
+        },
+        {
+          "kind": "TabsLayoutTab",
+          "spec": {
+            "layout": {
+              "kind": "GridLayout",
+              "spec": {
+                "items": [
+                  {
+                    "kind": "GridLayoutItem",
+                    "spec": {
+                      "element": {
+                        "kind": "ElementReference",
+                        "name": "panel-9"
+                      },
+                      "height": 15,
+                      "width": 24,
+                      "x": 0,
+                      "y": 0
+                    }
+                  }
+                ]
+              }
+            },
+            "title": "Source MA"
+          }
+        },
+        {
+          "kind": "TabsLayoutTab",
+          "spec": {
+            "layout": {
+              "kind": "GridLayout",
+              "spec": {
+                "items": [
+                  {
+                    "kind": "GridLayoutItem",
+                    "spec": {
+                      "element": {
+                        "kind": "ElementReference",
+                        "name": "panel-8"
+                      },
+                      "height": 15,
+                      "width": 24,
+                      "x": 0,
+                      "y": 0
+                    }
+                  }
+                ]
+              }
+            },
+            "title": "Отклонение от средней",
+            "variables": [
+              {
+                "kind": "CustomVariable",
+                "spec": {
+                  "allowCustomValue": false,
+                  "current": {
+                    "text": "100_000",
+                    "value": "ma_100000"
+                  },
+                  "description": "Период скользящей средней в тиках",
+                  "hide": "dontHide",
+                  "includeAll": false,
+                  "label": "Скользящая средняя (тиковое окно)",
+                  "multi": false,
+                  "name": "ma_column_name",
+                  "options": [],
+                  "query": "100_000 : ma_100000,\n200_000 : ma_200000,\n400_000 : ma_400000,\n600_000 : ma_600000,\n800_000 : ma_800000,\n1_000_000 : ma_1000000,\n2_000_000 : ma_2000000,\n4_000_000 : ma_4000000,\n6_000_000 : ma_6000000,\n8_000_000 : ma_8000000,\n10_000_000 : ma_10000000,\n20_000_000 : ma_20000000,\n40_000_000 : ma_40000000,\n60_000_000 : ma_60000000,\n80_000_000 : ma_80000000,\n100_000_000 : ma_100000000",
+                  "skipUrlSync": false,
+                  "valuesFormat": "csv"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "kind": "TabsLayoutTab",
+          "spec": {
+            "layout": {
+              "kind": "GridLayout",
+              "spec": {
+                "items": [
+                  {
+                    "kind": "GridLayoutItem",
+                    "spec": {
+                      "element": {
+                        "kind": "ElementReference",
+                        "name": "panel-7"
+                      },
+                      "height": 16,
+                      "width": 24,
+                      "x": 0,
+                      "y": 0
+                    }
+                  }
+                ]
+              }
+            },
+            "title": "Spread"
+          }
+        },
+        {
+          "kind": "TabsLayoutTab",
+          "spec": {
+            "layout": {
+              "kind": "GridLayout",
+              "spec": {
+                "items": [
+                  {
+                    "kind": "GridLayoutItem",
+                    "spec": {
+                      "element": {
+                        "kind": "ElementReference",
+                        "name": "panel-6"
+                      },
+                      "height": 10,
+                      "width": 8,
+                      "x": 0,
+                      "y": 0
+                    }
+                  },
+                  {
+                    "kind": "GridLayoutItem",
+                    "spec": {
+                      "element": {
+                        "kind": "ElementReference",
+                        "name": "panel-5"
+                      },
+                      "height": 10,
+                      "width": 8,
+                      "x": 8,
+                      "y": 0
+                    }
+                  },
+                  {
+                    "kind": "GridLayoutItem",
+                    "spec": {
+                      "element": {
+                        "kind": "ElementReference",
+                        "name": "panel-2"
+                      },
+                      "height": 10,
+                      "width": 8,
+                      "x": 16,
+                      "y": 0
+                    }
+                  }
+                ]
+              }
+            },
+            "title": "Trash"
+          }
+        }
+      ]
+    }
+  },
+  "links": [],
+  "liveNow": false,
+  "preferences": {
+    "layout": {
+      "kind": "GridLayout",
+      "spec": {
+        "items": []
+      }
+    }
+  },
+  "preload": false,
+  "tags": [],
+  "timeSettings": {
+    "autoRefresh": "",
+    "autoRefreshIntervals": [
+      "5s",
+      "10s",
+      "30s",
+      "1m",
+      "5m",
+      "15m",
+      "30m",
+      "1h",
+      "2h",
+      "1d"
+    ],
+    "fiscalYearStartMonth": 0,
+    "from": "2024-12-10T18:53:41.155Z",
+    "hideTimepicker": false,
+    "timezone": "browser",
+    "to": "2026-07-10T13:45:53.271Z"
+  },
+  "title": "Trading Analytic",
+  "variables": [
+    {
+      "kind": "QueryVariable",
+      "spec": {
+        "allowCustomValue": false,
+        "current": {
+          "text": "GBPUSD",
+          "value": "GBPUSD"
+        },
+        "definition": "SELECT name\nFROM `catalog`.instrument\nORDER BY name ASC",
+        "description": "",
+        "hide": "dontHide",
+        "includeAll": false,
+        "label": "Инструмент",
+        "multi": false,
+        "name": "instrument_name",
+        "options": [],
+        "query": {
+          "datasource": {
+            "name": "dfqtfblk2jnk0d"
+          },
+          "group": "grafana-clickhouse-datasource",
+          "kind": "DataQuery",
+          "spec": {
+            "__legacyStringValue": "SELECT name\nFROM `catalog`.instrument\nORDER BY name ASC"
+          },
+          "version": "v0"
+        },
+        "refresh": "onDashboardLoad",
+        "regex": "",
+        "regexApplyTo": "value",
+        "skipUrlSync": false,
+        "sort": "disabled"
+      }
+    }
+  ]
+}

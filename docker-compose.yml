@@ -1,0 +1,45 @@
+name: trading-analytic-env
+
+services:
+  clickhouse:
+    image: clickhouse/clickhouse-server:latest
+    container_name: clickhouse-server
+    ports:
+      - "8123:8123" # HTTP интерфейс (для Grafana и импорта)
+      - "9000:9000" # Native протокол (для консольного клиента)
+    volumes:
+      # Сохраняем базы данных, таблицы и ваши загруженные CSV
+      - clickhouse-data:/var/lib/clickhouse
+      # Сохраняем логи сервера
+      - clickhouse-logs:/var/log/clickhouse
+    environment:
+      - CLICKHOUSE_USER=admin
+      - CLICKHOUSE_PASSWORD=admin
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana-server
+    ports:
+      - "3005:3000"
+    depends_on:
+      - clickhouse
+    volumes:
+      # Сохраняем дашборды, пользователей, сессии и настройки плагинов
+      - grafana-data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      # Разрешаем устанавливать неподписанные плагины (нужно для некоторых плагинов ClickHouse)
+      - GF_ALLOW_LOADING_UNSIGNED_PLUGINS=grafana-clickhouse-datasource
+    restart: unless-stopped
+
+# Объявляем именованные тома, которые Docker будет хранить на диске хоста
+volumes:
+  clickhouse-data:
+  clickhouse-logs:
+  grafana-data:
