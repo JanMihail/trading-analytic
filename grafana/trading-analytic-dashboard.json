@@ -137,7 +137,32 @@
                   ]
                 }
               },
-              "overrides": []
+              "overrides": [
+                {
+                  "__systemRef": "hideSeriesFrom",
+                  "matcher": {
+                    "id": "byNames",
+                    "options": {
+                      "mode": "exclude",
+                      "names": [
+                        "bid"
+                      ],
+                      "prefix": "All except:",
+                      "readOnly": true
+                    }
+                  },
+                  "properties": [
+                    {
+                      "id": "custom.hideFrom",
+                      "value": {
+                        "legend": false,
+                        "tooltip": true,
+                        "viz": true
+                      }
+                    }
+                  ]
+                }
+              ]
             },
             "options": {
               "annotations": {
@@ -162,6 +187,245 @@
                 "mode": "single",
                 "sort": "none"
               }
+            }
+          },
+          "version": "13.1.0"
+        }
+      }
+    },
+    "panel-10": {
+      "kind": "Panel",
+      "spec": {
+        "data": {
+          "kind": "QueryGroup",
+          "spec": {
+            "queries": [
+              {
+                "kind": "PanelQuery",
+                "spec": {
+                  "hidden": false,
+                  "query": {
+                    "datasource": {
+                      "name": "dfqtfblk2jnk0d"
+                    },
+                    "group": "grafana-clickhouse-datasource",
+                    "kind": "DataQuery",
+                    "spec": {
+                      "editorType": "sql",
+                      "format": 1,
+                      "meta": {
+                        "builderOptions": {
+                          "columns": [],
+                          "database": "",
+                          "limit": 1000,
+                          "mode": "list",
+                          "queryType": "table",
+                          "table": ""
+                        }
+                      },
+                      "pluginVersion": "4.18.0",
+                      "queryType": "table",
+                      "rawSql": "SELECT\r\n    ROW_NUMBER() OVER (PARTITION BY symbol, threshold) as number,\r\n    sum(direction) OVER (\r\n        PARTITION BY symbol, threshold\r\n        ORDER BY start_time\r\n        ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW\r\n    ) AS direction\r\nFROM source.tick_moves\r\nWHERE\r\n    $__timeFilter_ms(start_time)\r\n    AND threshold = ${threshold}\r\nORDER BY symbol, threshold, start_time"
+                    },
+                    "version": "v0"
+                  },
+                  "refId": "A"
+                }
+              }
+            ],
+            "queryOptions": {},
+            "transformations": []
+          }
+        },
+        "description": "",
+        "id": 10,
+        "links": [],
+        "title": "",
+        "vizConfig": {
+          "group": "xychart",
+          "kind": "VizConfig",
+          "spec": {
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "palette-classic"
+                },
+                "custom": {
+                  "axisBorderShow": true,
+                  "axisCenteredZero": false,
+                  "axisColorMode": "text",
+                  "axisLabel": "",
+                  "axisPlacement": "auto",
+                  "fillOpacity": 50,
+                  "hideFrom": {
+                    "legend": false,
+                    "tooltip": false,
+                    "viz": false
+                  },
+                  "pointShape": "circle",
+                  "pointSize": {
+                    "fixed": 5
+                  },
+                  "pointStrokeWidth": 1,
+                  "scaleDistribution": {
+                    "type": "linear"
+                  },
+                  "show": "points+lines"
+                },
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": 0
+                    }
+                  ]
+                }
+              },
+              "overrides": []
+            },
+            "options": {
+              "legend": {
+                "calcs": [],
+                "displayMode": "list",
+                "overflow": "ellipsis",
+                "placement": "bottom",
+                "showLegend": true
+              },
+              "mapping": "auto",
+              "series": [
+                {}
+              ],
+              "tooltip": {
+                "hideZeros": false,
+                "mode": "single",
+                "sort": "none"
+              }
+            }
+          },
+          "version": "13.1.0"
+        }
+      }
+    },
+    "panel-11": {
+      "kind": "Panel",
+      "spec": {
+        "data": {
+          "kind": "QueryGroup",
+          "spec": {
+            "queries": [
+              {
+                "kind": "PanelQuery",
+                "spec": {
+                  "hidden": false,
+                  "query": {
+                    "datasource": {
+                      "name": "dfqtfblk2jnk0d"
+                    },
+                    "group": "grafana-clickhouse-datasource",
+                    "kind": "DataQuery",
+                    "spec": {
+                      "editorType": "sql",
+                      "format": 1,
+                      "meta": {
+                        "builderOptions": {
+                          "columns": [],
+                          "database": "",
+                          "limit": 1000,
+                          "mode": "list",
+                          "queryType": "table",
+                          "table": ""
+                        }
+                      },
+                      "pluginVersion": "4.18.0",
+                      "queryType": "table",
+                      "rawSql": "WITH seq AS (\r\n    SELECT\r\n        symbol,\r\n        threshold,\r\n        start_time,\r\n        direction_name AS d0,\r\n        lagInFrame(direction_name, 1, '') OVER w AS d1,\r\n        lagInFrame(direction_name, 2, '') OVER w AS d2,\r\n        lagInFrame(direction_name, 3, '') OVER w AS d3,\r\n        lagInFrame(direction_name, 4, '') OVER w AS d4,\r\n        lagInFrame(direction_name, 5, '') OVER w AS d5,\r\n        lagInFrame(direction_name, 6, '') OVER w AS d6,\r\n        lagInFrame(direction_name, 7, '') OVER w AS d7,\r\n        lagInFrame(direction_name, 8, '') OVER w AS d8,\r\n        lagInFrame(direction_name, 9, '') OVER w AS d9\r\n    FROM source.tick_moves\r\n    WHERE threshold = ${threshold} AND $__timeFilter_ms(start_time)\r\n    WINDOW w AS (PARTITION BY symbol, threshold ORDER BY start_time)\r\n),\r\nby_len AS (\r\n    SELECT\r\n        2 AS seq_len,\r\n        concat(d1, d0) AS sequence,\r\n        concat(d1) AS prefix,\r\n        count() AS cnt\r\n    FROM seq WHERE d1 != ''\r\n    GROUP BY d1, d0\r\n    UNION ALL\r\n    SELECT\r\n        3 AS seq_len,\r\n        concat(d2, d1, d0) AS sequence,\r\n        concat(d2, d1) AS prefix,\r\n        count() AS cnt\r\n    FROM seq WHERE d2 != ''\r\n    GROUP BY d2, d1, d0\r\n    UNION ALL\r\n    SELECT\r\n        4 AS seq_len,\r\n        concat(d3, d2, d1, d0) AS sequence,\r\n        concat(d3, d2, d1) AS prefix,\r\n        count() AS cnt\r\n    FROM seq WHERE d3 != ''\r\n    GROUP BY d3, d2, d1, d0\r\n    UNION ALL\r\n    SELECT\r\n        5 AS seq_len,\r\n        concat(d4, d3, d2, d1, d0) AS sequence,\r\n        concat(d4, d3, d2, d1) AS prefix,\r\n        count() AS cnt\r\n    FROM seq WHERE d4 != ''\r\n    GROUP BY d4, d3, d2, d1, d0\r\n    UNION ALL\r\n    SELECT\r\n        6 AS seq_len,\r\n        concat(d5, d4, d3, d2, d1, d0) AS sequence,\r\n        concat(d5, d4, d3, d2, d1) AS prefix,\r\n        count() AS cnt\r\n    FROM seq WHERE d5 != ''\r\n    GROUP BY d5, d4, d3, d2, d1, d0\r\n    UNION ALL\r\n    SELECT\r\n        7 AS seq_len,\r\n        concat(d6, d5, d4, d3, d2, d1, d0) AS sequence,\r\n        concat(d6, d5, d4, d3, d2, d1) AS prefix,\r\n        count() AS cnt\r\n    FROM seq WHERE d6 != ''\r\n    GROUP BY d6, d5, d4, d3, d2, d1, d0\r\n    UNION ALL\r\n    SELECT\r\n        8 AS seq_len,\r\n        concat(d7, d6, d5, d4, d3, d2, d1, d0) AS sequence,\r\n        concat(d7, d6, d5, d4, d3, d2, d1) AS prefix,\r\n        count() AS cnt\r\n    FROM seq WHERE d7 != ''\r\n    GROUP BY d7, d6, d5, d4, d3, d2, d1, d0\r\n    UNION ALL\r\n    SELECT\r\n        9 AS seq_len,\r\n        concat(d8, d7, d6, d5, d4, d3, d2, d1, d0) AS sequence,\r\n        concat(d8, d7, d6, d5, d4, d3, d2, d1) AS prefix,\r\n        count() AS cnt\r\n    FROM seq WHERE d8 != ''\r\n    GROUP BY d8, d7, d6, d5, d4, d3, d2, d1, d0\r\n    UNION ALL\r\n    SELECT\r\n        10 AS seq_len,\r\n        concat(d9, d8, d7, d6, d5, d4, d3, d2, d1, d0) AS sequence,\r\n        concat(d9, d8, d7, d6, d5, d4, d3, d2, d1) AS prefix,\r\n        count() AS cnt\r\n    FROM seq WHERE d9 != ''\r\n    GROUP BY d9, d8, d7, d6, d5, d4, d3, d2, d1, d0\r\n)\r\nSELECT\r\n    seq_len,\r\n    sequence,\r\n    cnt,\r\n    cnt * 100 / sum(cnt) OVER (PARTITION BY seq_len, prefix) AS probability\r\nFROM by_len\r\nORDER BY probability DESC"
+                    },
+                    "version": "v0"
+                  },
+                  "refId": "A"
+                }
+              }
+            ],
+            "queryOptions": {},
+            "transformations": []
+          }
+        },
+        "description": "",
+        "id": 11,
+        "links": [],
+        "title": "New panel",
+        "vizConfig": {
+          "group": "table",
+          "kind": "VizConfig",
+          "spec": {
+            "fieldConfig": {
+              "defaults": {
+                "color": {
+                  "mode": "thresholds"
+                },
+                "custom": {
+                  "align": "center",
+                  "cellOptions": {
+                    "type": "auto"
+                  },
+                  "footer": {
+                    "reducers": []
+                  },
+                  "inspect": false
+                },
+                "thresholds": {
+                  "mode": "absolute",
+                  "steps": [
+                    {
+                      "color": "green",
+                      "value": 0
+                    },
+                    {
+                      "color": "red",
+                      "value": 80
+                    }
+                  ]
+                }
+              },
+              "overrides": [
+                {
+                  "matcher": {
+                    "id": "byName",
+                    "options": "seq_len",
+                    "scope": "series"
+                  },
+                  "properties": [
+                    {
+                      "id": "custom.width",
+                      "value": 129
+                    }
+                  ]
+                },
+                {
+                  "matcher": {
+                    "id": "byName",
+                    "options": "sequence",
+                    "scope": "series"
+                  },
+                  "properties": [
+                    {
+                      "id": "custom.width",
+                      "value": 464
+                    }
+                  ]
+                }
+              ]
+            },
+            "options": {
+              "cellHeight": "sm",
+              "showHeader": true,
+              "sortBy": [
+                {
+                  "desc": true,
+                  "displayName": "probability"
+                }
+              ]
             }
           },
           "version": "13.1.0"
@@ -1188,6 +1452,65 @@
             },
             "title": "Trash"
           }
+        },
+        {
+          "kind": "TabsLayoutTab",
+          "spec": {
+            "layout": {
+              "kind": "GridLayout",
+              "spec": {
+                "items": [
+                  {
+                    "kind": "GridLayoutItem",
+                    "spec": {
+                      "element": {
+                        "kind": "ElementReference",
+                        "name": "panel-10"
+                      },
+                      "height": 12,
+                      "width": 24,
+                      "x": 0,
+                      "y": 0
+                    }
+                  },
+                  {
+                    "kind": "GridLayoutItem",
+                    "spec": {
+                      "element": {
+                        "kind": "ElementReference",
+                        "name": "panel-11"
+                      },
+                      "height": 9,
+                      "width": 24,
+                      "x": 0,
+                      "y": 12
+                    }
+                  }
+                ]
+              }
+            },
+            "title": "Цепи Маркова",
+            "variables": [
+              {
+                "kind": "CustomVariable",
+                "spec": {
+                  "allowCustomValue": false,
+                  "current": {
+                    "text": "50",
+                    "value": "0.00050"
+                  },
+                  "hide": "dontHide",
+                  "includeAll": false,
+                  "multi": false,
+                  "name": "threshold",
+                  "options": [],
+                  "query": "50 : 0.00050,\n100 : 0.00100,\n150 : 0.00150,\n200 : 0.00200,\n250 : 0.00250,\n300 : 0.00300,\n350 : 0.00350,\n400 : 0.00400,\n450 : 0.00450,\n500 : 0.00500,\n550 : 0.00550,\n600 : 0.00600,\n650 : 0.00650,\n700 : 0.00700,\n750 : 0.00750,\n800 : 0.00800,\n850 : 0.00850,\n900 : 0.00900,\n950 : 0.00950,\n1000 : 0.01000",
+                  "skipUrlSync": false,
+                  "valuesFormat": "csv"
+                }
+              }
+            ]
+          }
         }
       ]
     }
@@ -1219,10 +1542,10 @@
       "1d"
     ],
     "fiscalYearStartMonth": 0,
-    "from": "2024-12-10T18:53:41.155Z",
+    "from": "now-5y",
     "hideTimepicker": false,
     "timezone": "browser",
-    "to": "2026-07-10T13:45:53.271Z"
+    "to": "now"
   },
   "title": "Trading Analytic",
   "variables": [

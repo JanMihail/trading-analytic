@@ -1,0 +1,4 @@
+clickhouse-driver>=0.2.9
+numpy>=1.26
+numba>=0.60
+PyYAML>=6.0
