@@ -290,7 +290,7 @@
                 "displayMode": "list",
                 "overflow": "ellipsis",
                 "placement": "bottom",
-                "showLegend": true
+                "showLegend": false
               },
               "mapping": "auto",
               "series": [
@@ -466,7 +466,7 @@
                       },
                       "pluginVersion": "4.18.0",
                       "queryType": "timeseries",
-                      "rawSql": "SELECT\r\n  $__timeInterval(t.timestamp) as time,\r\n  avg((t.ask - t.bid) / 0.00001) as spread\r\nFROM\r\n  `ticks_EURUSD` t\r\nWHERE \r\n  $__timeFilter(t.timestamp)\r\nGROUP BY time\r\nORDER BY time"
+                      "rawSql": "SELECT\r\n  $__timeInterval_ms(t.timestamp) AS time,\r\n  avg((t.ask - t.bid) / ${tick_size}) AS spread\r\nFROM\r\n    source.tick_data_${instrument_name} t\r\nWHERE \r\n  $__timeFilter_ms(t.timestamp)\r\nGROUP BY time\r\nORDER BY time ASC"
                     },
                     "version": "v0"
                   },
@@ -481,7 +481,7 @@
         "description": "",
         "id": 2,
         "links": [],
-        "title": "Spread EURUSD",
+        "title": "Распределение спреда по времени",
         "vizConfig": {
           "group": "timeseries",
           "kind": "VizConfig",
@@ -489,8 +489,7 @@
             "fieldConfig": {
               "defaults": {
                 "color": {
-                  "mode": "palette-classic",
-                  "seriesBy": "last"
+                  "mode": "palette-classic"
                 },
                 "custom": {
                   "axisBorderShow": false,
@@ -552,14 +551,9 @@
                 "multiLane": false
               },
               "legend": {
-                "calcs": [
-                  "min",
-                  "max",
-                  "mean",
-                  "lastNotNull"
-                ],
-                "displayMode": "table",
-                "enableFacetedFilter": true,
+                "calcs": [],
+                "displayMode": "list",
+                "enableFacetedFilter": false,
                 "overflow": "ellipsis",
                 "placement": "bottom",
                 "showLegend": true
@@ -607,7 +601,7 @@
                       },
                       "pluginVersion": "4.18.0",
                       "queryType": "table",
-                      "rawSql": "SELECT \r\n    floor(bid / 0.00050) * 0.00050 AS bid_step,\r\n    count() AS tick_count\r\nFROM `ticks_EURUSD`\r\nWHERE $__timeFilter(timestamp)\r\nGROUP BY bid_step\r\nORDER BY bid_step ASC"
+                      "rawSql": "SELECT \r\n    floor(bid / (${level_step} * ${tick_size})) * ${level_step} * ${tick_size} AS bid_step,\r\n    count() AS tick_count\r\nFROM source.tick_data_${instrument_name}\r\nWHERE $__timeFilter_ms(timestamp)\r\nGROUP BY bid_step\r\nORDER BY bid_step DESC"
                     },
                     "version": "v0"
                   },
@@ -660,15 +654,25 @@
                     {
                       "color": "green",
                       "value": 0
-                    },
-                    {
-                      "color": "red",
-                      "value": 80
                     }
                   ]
                 }
               },
-              "overrides": []
+              "overrides": [
+                {
+                  "matcher": {
+                    "id": "byName",
+                    "options": "tick_count",
+                    "scope": "series"
+                  },
+                  "properties": [
+                    {
+                      "id": "decimals",
+                      "value": 0
+                    }
+                  ]
+                }
+              ]
             },
             "options": {
               "barRadius": 0,
@@ -676,8 +680,12 @@
               "fullHighlight": false,
               "groupWidth": 0.7,
               "legend": {
-                "calcs": [],
-                "displayMode": "list",
+                "calcs": [
+                  "min",
+                  "max",
+                  "mean"
+                ],
+                "displayMode": "table",
                 "overflow": "ellipsis",
                 "placement": "bottom",
                 "showLegend": true
@@ -685,6 +693,7 @@
               "orientation": "horizontal",
               "showValue": "auto",
               "stacking": "none",
+              "text": {},
               "tooltip": {
                 "hideZeros": false,
                 "mode": "single",
@@ -731,7 +740,7 @@
                       },
                       "pluginVersion": "4.18.0",
                       "queryType": "timeseries",
-                      "rawSql": "WITH numbered_ticks AS (\r\n    SELECT\r\n        timestamp,\r\n        bid,\r\n        -- Нумеруем тики по порядку (начиная с 0 для удобства деления)\r\n        row_number() OVER (ORDER BY timestamp) - 1 AS tick_index\r\n    FROM `ticks_EURUSD`\r\n    -- Рекомендуется добавить фильтр по времени для ограничения выборки\r\n    WHERE $__timeFilter(timestamp)\r\n),\r\ngrouped_ticks AS (\r\n    SELECT\r\n        -- Группируем по 100 тиков (0-99, 100-199 и т.д.)\r\n        tick_index div 20 AS group_id,\r\n        bid,\r\n        -- Находим первую и последнюю цену в этой сотне тиков\r\n        first_value(bid) OVER (PARTITION BY group_id ORDER BY tick_index ASC) AS first_bid,\r\n        last_value(bid) OVER (PARTITION BY group_id ORDER BY tick_index ASC ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS last_bid,\r\n        -- Берем время начала и конца интервала\r\n        min(timestamp) OVER (PARTITION BY group_id) AS start_time,\r\n        max(timestamp) OVER (PARTITION BY group_id) AS end_time\r\n    FROM numbered_ticks\r\n)\r\nSELECT\r\n    group_id,\r\n    end_time,\r\n    start_time,\r\n    first_bid,\r\n    last_bid,\r\n    -- Вычисляем дельту в пунктах (делим на 0.00001 для перевода в пипсы)\r\n    round((last_bid - first_bid) / 0.00001, 1) AS bid_delta_pips\r\nFROM grouped_ticks\r\nGROUP BY group_id, start_time, end_time, first_bid, last_bid\r\nORDER BY group_id DESC;\r\n"
+                      "rawSql": "WITH numbered_ticks AS (\r\n    SELECT\r\n        timestamp,\r\n        bid,\r\n        -- Нумеруем тики по порядку (начиная с 0 для удобства деления)\r\n        row_number() OVER (ORDER BY timestamp) - 1 AS tick_index\r\n    FROM `source`.tick_data_${instrument_name}\r\n    -- Рекомендуется добавить фильтр по времени для ограничения выборки\r\n    WHERE $__timeFilter_ms(timestamp)\r\n),\r\ngrouped_ticks AS (\r\n    SELECT\r\n        -- Группируем по N тиков (0-99, 100-199 и т.д.)\r\n        tick_index div ${level_step} AS group_id,\r\n        bid,\r\n        -- Находим первую и последнюю цену в этой сотне тиков\r\n        first_value(bid) OVER (PARTITION BY group_id ORDER BY tick_index ASC) AS first_bid,\r\n        last_value(bid) OVER (PARTITION BY group_id ORDER BY tick_index ASC ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS last_bid,\r\n        -- Берем время начала и конца интервала\r\n        min(timestamp) OVER (PARTITION BY group_id) AS start_time,\r\n        max(timestamp) OVER (PARTITION BY group_id) AS end_time\r\n    FROM numbered_ticks\r\n),\r\npre_final AS (\r\n    SELECT\r\n        group_id,\r\n        end_time,\r\n        start_time,\r\n        first_bid,\r\n        last_bid,\r\n        -- Вычисляем дельту в пунктах (делим на 0.00001 для перевода в пипсы)\r\n        round((last_bid - first_bid) / ${tick_size}, 1) AS bid_delta_pips\r\n    FROM grouped_ticks\r\n    GROUP BY group_id, start_time, end_time, first_bid, last_bid\r\n    ORDER BY group_id DESC\r\n)\r\nSELECT\r\n    end_time AS time,\r\n    bid_delta_pips AS delta\r\nFROM pre_final\r\nORDER BY end_time ASC"
                     },
                     "version": "v0"
                   },
@@ -804,34 +813,7 @@
                   ]
                 }
               },
-              "overrides": [
-                {
-                  "__systemRef": "hideSeriesFrom",
-                  "matcher": {
-                    "id": "byNames",
-                    "options": {
-                      "mode": "exclude",
-                      "names": [
-                        "first_bid",
-                        "last_bid",
-                        "bid_delta_pips"
-                      ],
-                      "prefix": "All except:",
-                      "readOnly": true
-                    }
-                  },
-                  "properties": [
-                    {
-                      "id": "custom.hideFrom",
-                      "value": {
-                        "legend": false,
-                        "tooltip": true,
-                        "viz": true
-                      }
-                    }
-                  ]
-                }
-              ]
+              "overrides": []
             },
             "options": {
               "annotations": {
@@ -889,7 +871,7 @@
                       },
                       "pluginVersion": "4.18.0",
                       "queryType": "timeseries",
-                      "rawSql": "SELECT\r\n    toHour(timestamp) AS time,\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 0) AS \"0\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 2) AS \"2\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 4) AS \"4\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 6) AS \"6\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 8) AS \"8\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 10) AS \"10\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 12) AS \"12\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 14) AS \"14\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 16) AS \"16\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 18) AS \"18\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 20) AS \"20\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 22) AS \"22\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 24) AS \"24\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 26) AS \"26\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 28) AS \"28\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 30) AS \"30\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 32) AS \"32\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 34) AS \"34\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 36) AS \"36\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 38) AS \"38\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 40) AS \"40\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 42) AS \"42\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 44) AS \"44\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 46) AS \"46\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 48) AS \"48\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 50) AS \"50\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 52) AS \"52\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 54) AS \"54\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 56) AS \"56\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 58) AS \"58\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 60) AS \"60\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 62) AS \"62\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 64) AS \"64\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 66) AS \"66\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 68) AS \"68\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 70) AS \"70\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 72) AS \"72\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 74) AS \"74\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 76) AS \"76\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 78) AS \"78\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 80) AS \"80\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 82) AS \"82\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 84) AS \"84\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 86) AS \"86\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 88) AS \"88\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 90) AS \"90\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 92) AS \"92\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 94) AS \"94\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 96) AS \"96\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 = 98) AS \"98\",\r\n    countIf(floor((ask - bid) * 100000 / 2) * 2 >= 100) AS \"100\"\r\nFROM `tick_data`\r\nWHERE \r\n  name = '${instrument_name}'\r\n  AND $__timeFilter(timestamp)\r\nGROUP BY time\r\nORDER BY time ASC"
+                      "rawSql": "SELECT\r\n    toHour(timestamp) AS time,\r\n    countIf(floor((ask - bid) / ${tick_size}) = 0) AS \"0\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 1) AS \"1\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 2) AS \"2\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 3) AS \"3\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 4) AS \"4\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 5) AS \"5\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 6) AS \"6\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 7) AS \"7\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 8) AS \"8\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 9) AS \"9\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 10) AS \"10\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 11) AS \"11\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 12) AS \"12\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 13) AS \"13\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 14) AS \"14\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 15) AS \"15\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 16) AS \"16\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 17) AS \"17\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 18) AS \"18\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 19) AS \"19\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 20) AS \"20\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 21) AS \"21\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 22) AS \"22\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 23) AS \"23\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 24) AS \"24\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 25) AS \"25\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 26) AS \"26\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 27) AS \"27\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 28) AS \"28\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 29) AS \"29\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 30) AS \"30\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 31) AS \"31\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 32) AS \"32\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 33) AS \"33\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 34) AS \"34\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 35) AS \"35\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 36) AS \"36\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 37) AS \"37\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 38) AS \"38\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 39) AS \"39\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 40) AS \"40\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 41) AS \"41\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 42) AS \"42\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 43) AS \"43\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 44) AS \"44\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 45) AS \"45\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 46) AS \"46\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 47) AS \"47\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 48) AS \"48\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 49) AS \"49\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 50) AS \"50\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 51) AS \"51\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 52) AS \"52\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 53) AS \"53\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 54) AS \"54\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 55) AS \"55\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 56) AS \"56\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 57) AS \"57\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 58) AS \"58\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 59) AS \"59\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 60) AS \"60\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 61) AS \"61\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 62) AS \"62\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 63) AS \"63\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 64) AS \"64\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 65) AS \"65\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 66) AS \"66\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 67) AS \"67\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 68) AS \"68\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 69) AS \"69\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 70) AS \"70\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 71) AS \"71\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 72) AS \"72\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 73) AS \"73\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 74) AS \"74\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 75) AS \"75\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 76) AS \"76\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 77) AS \"77\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 78) AS \"78\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 79) AS \"79\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 80) AS \"80\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 81) AS \"81\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 82) AS \"82\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 83) AS \"83\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 84) AS \"84\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 85) AS \"85\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 86) AS \"86\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 87) AS \"87\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 88) AS \"88\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 89) AS \"89\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 90) AS \"90\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 91) AS \"91\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 92) AS \"92\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 93) AS \"93\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 94) AS \"94\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 95) AS \"95\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 96) AS \"96\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 97) AS \"97\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 98) AS \"98\",\r\n    countIf(floor((ask - bid) / ${tick_size}) = 99) AS \"99\",\r\n    countIf(floor((ask - bid) / ${tick_size}) >= 100) AS \"100\"\r\nFROM `source`.`tick_data_${instrument_name}`\r\nWHERE \r\n  $__timeFilter_ms(timestamp)\r\nGROUP BY time\r\nORDER BY time ASC"
                     },
                     "version": "v0"
                   },
@@ -930,15 +912,15 @@
                 "multiLane": false
               },
               "calculate": false,
-              "cellGap": 2,
+              "cellGap": 1,
               "color": {
                 "exponent": 0.1,
                 "fill": "dark-green",
-                "mode": "scheme",
+                "mode": "opacity",
                 "reverse": false,
                 "scale": "exponential",
                 "scheme": "Reds",
-                "steps": 70
+                "steps": 128
               },
               "exemplars": {
                 "color": "rgba(255,0,255,0.7)"
@@ -1214,33 +1196,7 @@
                   ]
                 }
               },
-              "overrides": [
-                {
-                  "__systemRef": "hideSeriesFrom",
-                  "matcher": {
-                    "id": "byNames",
-                    "options": {
-                      "mode": "exclude",
-                      "names": [
-                        "bid",
-                        "ma__0______100_000"
-                      ],
-                      "prefix": "All except:",
-                      "readOnly": true
-                    }
-                  },
-                  "properties": [
-                    {
-                      "id": "custom.hideFrom",
-                      "value": {
-                        "legend": false,
-                        "tooltip": true,
-                        "viz": true
-                      }
-                    }
-                  ]
-                }
-              ]
+              "overrides": []
             },
             "options": {
               "annotations": {
@@ -1281,23 +1237,23 @@
           "kind": "TabsLayoutTab",
           "spec": {
             "layout": {
-              "kind": "GridLayout",
+              "kind": "AutoGridLayout",
               "spec": {
+                "columnWidthMode": "standard",
+                "fillScreen": true,
                 "items": [
                   {
-                    "kind": "GridLayoutItem",
+                    "kind": "AutoGridLayoutItem",
                     "spec": {
                       "element": {
                         "kind": "ElementReference",
                         "name": "panel-1"
-                      },
-                      "height": 13,
-                      "width": 24,
-                      "x": 0,
-                      "y": 0
+                      }
                     }
                   }
-                ]
+                ],
+                "maxColumnCount": 3,
+                "rowHeightMode": "standard"
               }
             },
             "title": "Source"
@@ -1307,23 +1263,23 @@
           "kind": "TabsLayoutTab",
           "spec": {
             "layout": {
-              "kind": "GridLayout",
+              "kind": "AutoGridLayout",
               "spec": {
+                "columnWidthMode": "standard",
+                "fillScreen": true,
                 "items": [
                   {
-                    "kind": "GridLayoutItem",
+                    "kind": "AutoGridLayoutItem",
                     "spec": {
                       "element": {
                         "kind": "ElementReference",
                         "name": "panel-9"
-                      },
-                      "height": 15,
-                      "width": 24,
-                      "x": 0,
-                      "y": 0
+                      }
                     }
                   }
-                ]
+                ],
+                "maxColumnCount": 3,
+                "rowHeightMode": "standard"
               }
             },
             "title": "Source MA"
@@ -1333,23 +1289,23 @@
           "kind": "TabsLayoutTab",
           "spec": {
             "layout": {
-              "kind": "GridLayout",
+              "kind": "AutoGridLayout",
               "spec": {
+                "columnWidthMode": "standard",
+                "fillScreen": true,
                 "items": [
                   {
-                    "kind": "GridLayoutItem",
+                    "kind": "AutoGridLayoutItem",
                     "spec": {
                       "element": {
                         "kind": "ElementReference",
                         "name": "panel-8"
-                      },
-                      "height": 15,
-                      "width": 24,
-                      "x": 0,
-                      "y": 0
+                      }
                     }
                   }
-                ]
+                ],
+                "maxColumnCount": 3,
+                "rowHeightMode": "standard"
               }
             },
             "title": "Отклонение от средней",
@@ -1381,114 +1337,123 @@
           "kind": "TabsLayoutTab",
           "spec": {
             "layout": {
-              "kind": "GridLayout",
+              "kind": "AutoGridLayout",
               "spec": {
+                "columnWidthMode": "standard",
+                "fillScreen": true,
                 "items": [
                   {
-                    "kind": "GridLayoutItem",
+                    "kind": "AutoGridLayoutItem",
                     "spec": {
                       "element": {
                         "kind": "ElementReference",
                         "name": "panel-7"
-                      },
-                      "height": 16,
-                      "width": 24,
-                      "x": 0,
-                      "y": 0
-                    }
-                  }
-                ]
-              }
-            },
-            "title": "Spread"
-          }
-        },
-        {
-          "kind": "TabsLayoutTab",
-          "spec": {
-            "layout": {
-              "kind": "GridLayout",
-              "spec": {
-                "items": [
-                  {
-                    "kind": "GridLayoutItem",
-                    "spec": {
-                      "element": {
-                        "kind": "ElementReference",
-                        "name": "panel-6"
-                      },
-                      "height": 10,
-                      "width": 8,
-                      "x": 0,
-                      "y": 0
+                      }
                     }
                   },
                   {
-                    "kind": "GridLayoutItem",
-                    "spec": {
-                      "element": {
-                        "kind": "ElementReference",
-                        "name": "panel-5"
-                      },
-                      "height": 10,
-                      "width": 8,
-                      "x": 8,
-                      "y": 0
-                    }
-                  },
-                  {
-                    "kind": "GridLayoutItem",
+                    "kind": "AutoGridLayoutItem",
                     "spec": {
                       "element": {
                         "kind": "ElementReference",
                         "name": "panel-2"
-                      },
-                      "height": 10,
-                      "width": 8,
-                      "x": 16,
-                      "y": 0
+                      }
                     }
                   }
-                ]
+                ],
+                "maxColumnCount": 3,
+                "rowHeightMode": "standard"
               }
             },
-            "title": "Trash"
+            "title": "Спред"
           }
         },
         {
           "kind": "TabsLayoutTab",
           "spec": {
             "layout": {
-              "kind": "GridLayout",
+              "kind": "AutoGridLayout",
               "spec": {
+                "columnWidthMode": "standard",
+                "fillScreen": true,
                 "items": [
                   {
-                    "kind": "GridLayoutItem",
+                    "kind": "AutoGridLayoutItem",
+                    "spec": {
+                      "element": {
+                        "kind": "ElementReference",
+                        "name": "panel-6"
+                      }
+                    }
+                  },
+                  {
+                    "kind": "AutoGridLayoutItem",
+                    "spec": {
+                      "element": {
+                        "kind": "ElementReference",
+                        "name": "panel-5"
+                      }
+                    }
+                  }
+                ],
+                "maxColumnCount": 3,
+                "rowHeightMode": "standard"
+              }
+            },
+            "title": "Плотность, скорость",
+            "variables": [
+              {
+                "kind": "CustomVariable",
+                "spec": {
+                  "allowCustomValue": true,
+                  "current": {
+                    "text": "100",
+                    "value": "100"
+                  },
+                  "hide": "dontHide",
+                  "includeAll": false,
+                  "label": "Шаг, пипсы",
+                  "multi": false,
+                  "name": "level_step",
+                  "options": [],
+                  "query": "10,\n20,\n30,\n40,\n50,\n60,\n70,\n80,\n90,\n100,\n150,\n200,\n250,\n300,\n350,\n400,\n450,\n500,\n550,\n600,\n650,\n700,\n750,\n800,\n850,\n900,\n950,\n1000",
+                  "skipUrlSync": false,
+                  "valuesFormat": "csv"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "kind": "TabsLayoutTab",
+          "spec": {
+            "layout": {
+              "kind": "AutoGridLayout",
+              "spec": {
+                "columnWidthMode": "standard",
+                "fillScreen": true,
+                "items": [
+                  {
+                    "kind": "AutoGridLayoutItem",
                     "spec": {
                       "element": {
                         "kind": "ElementReference",
                         "name": "panel-11"
-                      },
-                      "height": 12,
-                      "width": 24,
-                      "x": 0,
-                      "y": 0
+                      }
                     }
                   },
                   {
-                    "kind": "GridLayoutItem",
+                    "kind": "AutoGridLayoutItem",
                     "spec": {
                       "element": {
                         "kind": "ElementReference",
                         "name": "panel-10"
-                      },
-                      "height": 12,
-                      "width": 24,
-                      "x": 0,
-                      "y": 12
+                      }
                     }
                   }
-                ]
+                ],
+                "maxColumnCount": 1,
+                "rowHeightMode": "standard"
               }
             },
             "title": "Цепи Маркова",
@@ -1498,8 +1463,8 @@
                 "spec": {
                   "allowCustomValue": false,
                   "current": {
-                    "text": "200",
-                    "value": "0.00200"
+                    "text": "100",
+                    "value": "0.00100"
                   },
                   "hide": "dontHide",
                   "includeAll": false,
@@ -1562,9 +1527,9 @@
       "1d"
     ],
     "fiscalYearStartMonth": 0,
-    "from": "now-5y",
+    "from": "now-1y",
     "hideTimepicker": false,
-    "timezone": "browser",
+    "timezone": "utc",
     "to": "now"
   },
   "title": "Trading Analytic",
@@ -1593,6 +1558,39 @@
           "kind": "DataQuery",
           "spec": {
             "__legacyStringValue": "SELECT name\nFROM `catalog`.instrument\nORDER BY name ASC"
+          },
+          "version": "v0"
+        },
+        "refresh": "onDashboardLoad",
+        "regex": "",
+        "regexApplyTo": "value",
+        "skipUrlSync": false,
+        "sort": "disabled"
+      }
+    },
+    {
+      "kind": "QueryVariable",
+      "spec": {
+        "allowCustomValue": false,
+        "current": {
+          "text": "0.00001",
+          "value": "0.00001"
+        },
+        "definition": "SELECT tick_size\nFROM catalog.instrument\nWHERE name = '${instrument_name}'",
+        "description": "Размер тика",
+        "hide": "hideVariable",
+        "includeAll": false,
+        "multi": false,
+        "name": "tick_size",
+        "options": [],
+        "query": {
+          "datasource": {
+            "name": "dfqtfblk2jnk0d"
+          },
+          "group": "grafana-clickhouse-datasource",
+          "kind": "DataQuery",
+          "spec": {
+            "__legacyStringValue": "SELECT tick_size\nFROM catalog.instrument\nWHERE name = '${instrument_name}'"
           },
           "version": "v0"
         },
