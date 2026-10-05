@@ -35,7 +35,8 @@ CREATE TABLE IF NOT EXISTS source.tick_moves
     start_time     DateTime64(3),
     end_time       DateTime64(3),
     start_price    Decimal(9,5),
-    end_price      Decimal(9,5)
+    end_price      Decimal(9,5),
+    time_delta     UInt32
 )
 ENGINE = MergeTree
 PARTITION BY (symbol, toYYYYMM(start_time))

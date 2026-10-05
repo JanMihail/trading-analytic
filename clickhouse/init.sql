@@ -17,9 +17,11 @@ COMMENT 'Справочник инструментов';
 INSERT INTO `catalog`.instrument (name, tick_size) VALUES
 	('AUDUSD', 0.00001),
 	('EURUSD', 0.00001),
+	('EURUSD_real', 0.00001),
 	('GBPUSD', 0.00001),
-	('USDJPY', 0.00100);
-
+	('USDJPY', 0.00100),
+	('XAUUSD', 0.01000),
+	('XAUUSD_real', 0.01000);
 
 
 --
@@ -34,7 +36,7 @@ CREATE TABLE `templates`.tick_data
     timestamp DateTime64(3) NOT NULL COMMENT 'Временная метка котировки',
     ask Decimal32(5) NOT NULL COMMENT 'Цена покупки',
     bid Decimal32(5) NOT NULL COMMENT 'Цена продажи',
-    flags UInt32 NOT NULL COMMENT 'Флаги изменения'
+    flags UInt32 NULL COMMENT 'Флаги изменения'
 )
 ENGINE = MergeTree()
 PARTITION BY toYYYYMM(timestamp)
@@ -46,19 +48,22 @@ COMMENT 'Шаблон для таблицы с сырыми тиковыми д�
 --
 -- Сырые даные
 --
--- DROP DATABASE IF EXISTS `source`;
+DROP DATABASE IF EXISTS `source`;
 CREATE DATABASE `source`;
 
 CREATE TABLE `source`.tick_data_AUDUSD AS `templates`.tick_data COMMENT 'Тиковые данные AUDUSD';
 CREATE TABLE `source`.tick_data_EURUSD AS `templates`.tick_data COMMENT 'Тиковые данные EURUSD';
+CREATE TABLE `source`.tick_data_EURUSD_real AS `templates`.tick_data COMMENT 'Тиковые данные EURUSD_real';
 CREATE TABLE `source`.tick_data_GBPUSD AS `templates`.tick_data COMMENT 'Тиковые данные GBPUSD';
 CREATE TABLE `source`.tick_data_USDJPY AS `templates`.tick_data COMMENT 'Тиковые данные USDJPY';
+CREATE TABLE `source`.tick_data_XAUUSD AS `templates`.tick_data COMMENT 'Тиковые данные XAUUSD';
+CREATE TABLE `source`.tick_data_XAUUSD_real AS `templates`.tick_data COMMENT 'Тиковые данные XAUUSD_real';
 
 
 --
 -- Аналитика
 --
--- DROP DATABASE IF EXISTS `analytic`;
+DROP DATABASE IF EXISTS `analytic`;
 CREATE DATABASE `analytic`;
 
 DROP TABLE IF EXISTS `analytic`.tick_data_GBPUSD_with_ma;
